@@ -1,0 +1,23 @@
+# generic tag for one's custom stuff you don't want tracked on git
+*_nogit_*
+
+# no jupyter/spyder .cache or other bookkeeping files
+.ipynb_checkpoints
+.spyderproject
+.spyderworkspace
+.spyproject
+*.cache
+*.egg-info
+_build
+_static
+_templates
+
+# no compliled/visualstudio files either
+*.pyc
+__pycache__
+*.vs
+build
+dist
+
+#no ~ files from emacs either
+*~
