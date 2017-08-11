@@ -205,6 +205,61 @@
     your process by using your environment.yml.
 
 
+[NOTES ON VERSION CONTROL]
+-A. I can't stress enough - Google is your friend. Whatever you need
+    to do, someone on Stack Exchange or elsewhere has instructions
+    for doing it.
+-B. Git repository structure to follow the pattern at the following URL:
+    http://nvie.com/posts/a-successful-git-branching-model/
+    ...EXCEPT that group members are expected to have a personal
+    working branch for miscellaneous changes to repo. Individual
+    changes can be extracted to a feature branch by checking out
+    a new branch and importing the changed files:
+
+-C. Standalone scripts/notebooks for personal use don't necessarily
+    NEED to be version controlled at all, but any changes to the "eda"
+    modules (bugfixes, added fit/simulation models, etc.) need to be
+    version controlled both so we can benefit from each other's work
+    and so we don't fragment our code base.
+-C. To version control your own files (scripts, notebooks, etc.), you'll
+    probably want create your own git repository in whatever folder they
+    are in, which is easily done offline simply by typing "git init" into
+    Git Bash while inside that folder. Alternatively, Sih group members
+    may also want to share/sync notebooks by saving them in the package
+    repository, commiting them to their own working branch.
+    NOTE: If you commit notebooks to the package repository,
+          please avoid large figure sizes to avoid repository bloat.
+          So if you normally create large figures with a command like
+              plt.figure(figsize=(12,8))
+          Consider replacing such commands with something like
+              plt.figure(figsize=WIDE_FIGURE_SIZE)
+          where WIDE_FIGURE_SIZE is a global variable that can be
+          easily changed at the start of the notebook:
+              # WIDE_FIGURE_SIZE = (12, 8)  # normal use
+              WIDE_FIGURE_SIZE = (4, 3)  # small version for git repos
+          See the examples directory for notebooks that do this.
+-D. To disable version control for a file stored in the repository, put
+    "_nogit_" anywhere in the file or folder name.
+-C. Really, though, it can only help to keep everything under version control,
+    especially for syncing between computers and sharing with others.
+    Just put it in your own branch.
+-E. Git can get complicated, so make sure you remember to checkout a new
+    branch _before_ making code changes! Working off the main branch is
+    not a good idea and you don't want to have to migrate your changes
+    to a separate branch later on, though anything is possible in Git
+    with enough internet research.
+-F. "Main" branch is reserved for stable versions you would trust telling
+    someone to use who has no idea how the code works. If this were
+    experiment running code, this is what you run
+-G. Custom work should go on a new "feature" branch, from which some or all
+    changes can be merged into the working "develop" branch which 
+-H. "Release" branches should use "python setup.py develop" to update version
+    after changing top-level "__init__.py". Don't forget CHANGES.txt either.
+-I. Etiquette to be determined, but probably don't merge your branch into
+    develop/main without talking to others. Can push your branches online
+    without merging and affecting others' code, and changes to shared
+    develop/main branches affect other branches downstream!
+
 
 
 [ BELOW THIS LINE IS ALL OLD AND LIKELY OUTDATED ]
@@ -213,40 +268,6 @@
 
 
 
-VERSION CONTROL:
--Standalone scripts for personal use don't necessarily NEED to be version
-    controlled at all, but any changes to the "eda"
-    modules (bugfixes, added models, etc.) need to be version controlled
-    both so we can benefit from each other's work and so we don't fragment
-    our code base.
--To disable version control for a file, put "_nogit_" anywhere in the 
-    file or folder name.
--Really, though, it can only help to keep everything under version control,
-    especially for syncing between computers and sharing with others.
-    Just put it in your own branch.
--Lots of git tutorials out there, I recommend learning the basics:
-    "git clone", "git push/pull", "git checkout", "git commit -m 'message'",
-    "git status", "git fetch/merge", "git add/rm"...it's a lot to take in,
-    but extremely useful both here and in any future coding work.
--Git can get complicated, so make sure you remember to checkout a new
-    branch _before_ making code changes! Working off the main branch is
-    not a good idea and you don't want to have to migrate your changes
-    to a separate branch later on, though anything is possible in Git
-    with enough internet research.
--Git repository structure to follow the pattern at the following URL
-    (it's pretty standard):
-    http://nvie.com/posts/a-successful-git-branching-model/
--"Main" branch is reserved for stable versions you would trust telling
-    someone to use who has no idea how the code works. If this were
-    experiment running code, this is what you run
--Custom work should go on a new "feature" branch, from which some or all
-    changes can be merged into the working "develop" branch which 
--"Release" branches should use "python setup.py develop" to update version
-    after changing top-level "__init__.py". Don't forget CHANGES.txt either.
--Etiquette to be determined, but probably don't merge your branch into
-    develop/main without talking to others. Can push your branches online
-    without merging and affecting others' code, and changes to shared
-    develop/main branches affect other branches downstream!
 
 
 DOCUMENTATION:
