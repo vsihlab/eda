@@ -1,44 +1,134 @@
-INSTALLATION:
--Recommended python package manager is Anaconda for its simplicity.
-    Python 3.5 is recommended; multiprocessing requires it!
--Install Git, one simple option is Git For Windows:
+[Coming soon: installing this package directly using conda!
+    For now, use the following steps to install the development
+    version of this package using Git]
+
+[DEVELOPMENT VERSION INSTALLATION STEPS]
+-1. Download and install Anaconda distribution of Python 3.x:
+    https://www.continuum.io/downloads
+
+-2. Install Git, one simple option is Git For Windows:
     https://git-scm.com/downloads
--After setting up Git, use "git clone" to pull a copy of directory onto
+
+-3. After setting up Git, use "git clone" to pull a copy of directory onto
     your computer, automatically set up to track shared online version.
 
-    In directory where you want to put project, open Git Bash and type:
-        git clone https://github.com/vsihlab/experimentdataanalysis.git
+    --Detailed Instructions--
+    Open Git Bash and navigate to the directory where you want to store
+    the working version of the data analysis package, e.g.
+	cd ~/gitrepos/
+    then type the following:
+        git clone https://github.com/vsihlab/eda.git
+	cd eda
 
--To actually edit and run code, it is recommended you work within a virtual
-    environment, which conda makes relatively painless. From the command line,
-    navigate to the experimentdataanalysis directory and type:
+-4. Use Git to check out the "develop" branch.
+    Sih group members should then create a new, personal working branch
+    split from the "develop" branch and maintain it online, allowing
+    easy syncing between computers and facilitating the sharing of
+    code fixes and improvements.
+
+    --Detailed Instructions--
+    To switch your local repository to the active development branch, type
+        git checkout develop
+
+    [for Sih group members:]
+    Next, create your new branch from command line (in project folder) with:
+        git checkout -b [yourname]_working_branch develop
+
+    Finally, set up your branch to allow you to host it online via:
+        git push --set-upstream origin [yourname]_working_branch
+
+    You will need the vsihlab GitHub credentials for that step.
+    e.g. "git checkout develop"
+         "git checkout -b michael_working_branch develop"
+         "git push --set-upstream origin michael_working_branch"
+
+    --Further Advice--
+    -A. Please see the section on version control below!
+    -B. Fetch online updates and merge them before you start working,
+        particularly if you've switched computers. Git makes it easy
+        to keep code synced across computers, once you learn a few
+        commands. Get used to typing:
+            git fetch    [to check for online updates]
+            git merge    [to merge online updates into current branch]
+    -C. Commit file changes to your working branch ASAP, and push
+        those changes to the online repository (if a Sih group member).
+        This, combined with (B.), keeps code synced across computers
+        and easily rolled back to previous commit.
+        Also get used to this workflow:
+            git status    [to list all changes]
+            [for each changed file:]
+                [to examine changes:] git diff [filename]
+                [to keep changes:] git add [filename]
+                [to revert changes:] git checkout [filename]
+            [alternatively, to just add all file changes:] git add .
+            git commit -m "message describing changes"
+    -D. Google is your friend for Git help! But here are the most
+        common commands you should probably know:
+            - To swap out all files for those of another branch
+              and switch to working on that branch:
+                git checkout [branch name]
+            - To download updates from online repository without
+              actually implementing them:
+                git fetch
+            - To (if possible) merge in fetched updates into
+              your directory without deleting any of your own changes:
+                git merge
+            - To see a summary of your changes since last commit
+              and to see any downloaded updates relevant to your branch:
+                git status
+            - To confirm or "stage" changes made to a file, or
+              to add a new file to the repository:
+                git add [filename, or . for all files]
+            - To revert all changes to a file since last commit:
+                git checkout [filename]
+            - To commit staged changes to the repository:
+                git commit -m "[description of changes]"
+            - To see changes between file and its last committed version
+              (or, if changes already staged, from last staged version)
+                git diff [filename]
+            - To push local commits to the online repository:
+                git push origin
+    -E. Make use of the ability to try file versions from other people's
+        branches or roll back to previous file versions on your own branch.
+        Git can do anything, and again, Google is your friend.
+    -F. Note: if you manage other git repositories on different git
+        accounts, you may need to set repository-specific credential
+        storage using the Git Credentials Manager.
+        For info, check https://git-scm.com/docs/git-credential
+
+-5. It is __strongly__ recommended you work within a virtual environment,
+    which conda makes relatively painless.
+
+    --Detailed Instructions--
+    From your preferred command line tool, navigate to your local
+    eda git repository and type:
 	conda env create -f environment.yml
 
-    This will install all required packages (and no others) to a virtual
-    environment named "experimentdataanalysis". To use it, type
+    This will install all required packages (and no others) as a virtual
+    Python environment named "eda". To use it, type
 	[in bash]:
-	source activate experimentdataanalysis
+	source activate eda
 
 	[in cmd.exe]:
-	activate experimentdataanalysis
+	activate eda
 
 	[in Windows PowerShell]:
 	cmd
-	activate experimentdataanalysis
+	activate eda
 	powershell
 
-    This will put the text "(experimentdataanalysis)" before the command prompt
-    (except in PowerShell), letting you know you are in the virtual environment.
-    To leave the environment, use the same command, except with
-    "activate experimentdatanalysis" replaced with "deactivate". While inside the
-    virtual environment, you can run any python code with no fear of conflict with
-    other installed Python packages, and without these packages affecting the rest
-    of your Python install. I recommend the program Spyder, which is a bit like
-    MATLAB, for development, but there are other options as well, such as Python's
-    native IDLE or JuPyTer. You can even write code in a program like Notepad and
-    run it from Python's command line interpreter. New packages may be installed into
-    your virtual environment at will, and they will remain local to that environment.
+    This will put the text "(eda)" before the command prompt (except in
+    PowerShell), letting you know you are in the virtual environment. To leave
+    the environment, use the same command, except with
+    "activate eda" replaced with simply "deactivate". While inside the virtual
+    environment, you can run Python code with no fear of conflict with
+    other installed Python packages, and without these packages affecting
+    the rest of your Python install. New packages may be installed into
+    your virtual environment by installing them while inside that environment,
+    and they will remain local to that environment.
 
+    Of course, command-line Python is not ideal, so you should run your
+    favorite IDE from the command line:
 	[To run Jupyter Notebook]:
 	jupyter notebook
 
@@ -55,7 +145,7 @@ INSTALLATION:
 	python [script name]  (if in directory already)
 	python [path-to-script]  (otherwise)
 
-	[To install a new python package]:
+	[To install a new python package in the current environment]:
 	conda install [package name]
 	conda install -c [channel name, e.g. conda-forge] [package name]
 	pip install
@@ -63,43 +153,20 @@ INSTALLATION:
     There are ways to automate this process inside Windows shortcuts, if you
     are so inclined, but that is beyond the scope of this readme.
 
--Should immediately switch to a new custom branch with your name and upload
-    it. This keeps your changes local to your "branch" both on your computer
-    and online, and lets the rest of us see any proposed changes to be merged
-    in.
 
-    First, switch to the active development branch:
-        git checkout develop
 
-    Second, create your new branch from command line (in project folder) with:
-        git checkout -b "[yourname]_[branchname]" develop
 
-    Third, set up your branch to allow you to host it online via:
-        git push --set-upstream origin "[yourname]_[branchname]"
 
-    e.g. "git checkout develop"
-         "git checkout -b michael_incremental_updates develop"
-         "git push --set-upstream origin michael_incremental_updates"
 
--Can swap between branches via "git checkout". "git fetch" and "git status"
-    can be used liberally to keep track of changes both local and remote
-    and stay up to date. "git push origin" allows you to push your branch
-    online to be shared, and "git pull origin" updates your local copy to
-    stay current with the online version as long as there are no conflicts.
+[ BELOW THIS LINE IS ALL OLD AND LIKELY OUTDATED ]
+-----------------------------------------------------------------
 
--Note: if you have other git repositories on different accounts, you may
-    need to set repository-specific credential storage if you use the
-    Git Credentials Manager.
 
-    This can be done with the Git Bash line:
-        git config --global credential.useHttpPath 
-
--Please read the section on version control below!
 
 
 VERSION CONTROL:
 -Standalone scripts for personal use don't necessarily NEED to be version
-    controlled at all, but any changes to the "experimentdataanalysis"
+    controlled at all, but any changes to the "eda"
     modules (bugfixes, added models, etc.) need to be version controlled
     both so we can benefit from each other's work and so we don't fragment
     our code base.
@@ -139,7 +206,7 @@ DOCUMENTATION:
     at the beginning of each python function/class/etc, using Sphinx.
     Should probably get back to that sometime.
 -Note that version number is stored in top level __init__.py file
-    (experimentdataanalysis\__init__.py) as "__version__ = 'X.X.X'"
+    (eda\__init__.py) as "__version__ = 'X.X.X'"
     Both Sphinx and setuptools can read this variable; only git does not
     automatically tag version numbers (or even push version tags automatically)
 
