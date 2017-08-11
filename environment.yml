@@ -1,4 +1,4 @@
-name: experimentdataanalysis
+name: eda
 channels:
   - conda-forge
 dependencies:
