@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pandas as pd
 
-import experimentdataanalysis.data_io.metadataparsing as metadataparsing
+import eda.data_io.metadataparsing as metadataparsing
 
 def parse_filepath_and_header(filepath, header_string=None,
                               parsing_keyword_lists=None,
