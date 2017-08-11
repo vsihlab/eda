@@ -2,12 +2,21 @@
     For now, use the following steps to install the development
     version of this package using Git]
 
-[DEVELOPMENT VERSION INSTALLATION STEPS]
--1. Download and install Anaconda distribution of Python 3.x:
-    https://www.continuum.io/downloads
+[DEVELOPMENT VERSION INSTALLATION STEPS - WINDOWS 7+]
+-1. Download and install Anaconda distribution of Python 3.x
+    (available at https://www.continuum.io/downloads ), then
+    install conda-build from the command line.
 
--2. Install Git, one simple option is Git For Windows:
-    https://git-scm.com/downloads
+    --Detailed Instructions--
+    From your preferred command line tool, type:
+        conda update conda
+        conda install conda-build
+    Note: If you have trouble using Anaconda's command line tools,
+          consider using the "Anaconda Prompt" installed with Anaconda.
+
+-2. Install Git. One simple option is Git For Windows
+    (available at https://git-scm.com/downloads ), as its Git Bash is a
+    useful tool for using Git on Windows machines.
 
 -3. After setting up Git, use "git clone" to pull a copy of directory onto
     your computer, automatically set up to track shared online version.
@@ -52,7 +61,7 @@
             git merge    [to merge online updates into current branch]
     -C. Commit file changes to your working branch ASAP, and push
         those changes to the online repository (if a Sih group member).
-        This, combined with (B.), keeps code synced across computers
+        This, combined with (B), keeps code synced across computers
         and easily rolled back to previous commit.
         Also get used to this workflow:
             git status    [to list all changes]
@@ -96,39 +105,73 @@
         storage using the Git Credentials Manager.
         For info, check https://git-scm.com/docs/git-credential
 
--5. It is __strongly__ recommended you work within a virtual environment,
-    which conda makes relatively painless.
+-5. Create a virtual environment for using this development package
+    using the environment.yml in the git repository to install
+    all prerequisites. It is __strongly__ recommended you work within
+    a virtual environment for Python work in general, and Anaconda makes
+    this process relatively painless.
 
     --Detailed Instructions--
     From your preferred command line tool, navigate to your local
     eda git repository and type:
-	conda env create -f environment.yml
+	conda env create -n eda-dev -f environment.yml
 
     This will install all required packages (and no others) as a virtual
-    Python environment named "eda". To use it, type
+    Python environment named "eda-dev", but feel free to substitute that
+    name with any other name you prefer, just substitute "eda-dev" with
+    your name of choice in all code examples.
+    __Do not activate this virtual environment yet__
+
+-6. Finally, install the package repository into your virtual
+    environment in "development mode" by using conda-build's
+    conda-develop command. This means that conda will treat the
+    git repository as an installed package, allowing use from
+    any location on the computer. Also, changes to the repository,
+    such as checking out a different git branch, will immediately
+    affect code run in this virtual environment, though edited
+    modules will need to be reloaded for changes to take effect.
+
+    --Detailed Instructions--
+    From your preferred command line tool, navigate to your local
+    eda git repository and type the following while NOT within
+    any virtual environment:
+        conda-develop . -n eda-dev
+
+-7. Installation complete. Run Python from within the virtual
+    environment you created in order to use the development version
+    of this package. Of course, command line Python is not ideal,
+    so you should run your favorite IDE from the command line,
+    which will give you the usual visual interface but with the
+    custom Python installation of the virtual environment.
+
+    Sih group members, please take note of the version control
+    advice further down in this readme.
+
+    --Detailed Instructions--
+    To activate your virtual environment, type:
 	[in bash]:
-	source activate eda
+	source activate eda-dev
 
 	[in cmd.exe]:
-	activate eda
+	activate eda-dev
 
 	[in Windows PowerShell]:
 	cmd
-	activate eda
-	powershell
+	activate eda-dev
+	[to regain PowerShell functionality:] powershell
 
     This will put the text "(eda)" before the command prompt (except in
-    PowerShell), letting you know you are in the virtual environment. To leave
-    the environment, use the same command, except with
-    "activate eda" replaced with simply "deactivate". While inside the virtual
-    environment, you can run Python code with no fear of conflict with
-    other installed Python packages, and without these packages affecting
-    the rest of your Python install. New packages may be installed into
-    your virtual environment by installing them while inside that environment,
-    and they will remain local to that environment.
+    PowerShell), letting you know you are in the virtual environment.
+    To leave the environment, use the same command, except with
+    "activate eda" replaced with simply "deactivate". While inside the
+    virtual environment, you can run Python code with no fear of conflict
+    with other installed Python packages, and without these packages
+    affecting the rest of your Python install.
 
-    Of course, command-line Python is not ideal, so you should run your
-    favorite IDE from the command line:
+    There are ways to automate this process inside Windows shortcuts and
+    thus removing the command line requirement, if you are so inclined,
+    but that is beyond the scope of this readme.
+
 	[To run Jupyter Notebook]:
 	jupyter notebook
 
@@ -145,15 +188,21 @@
 	python [script name]  (if in directory already)
 	python [path-to-script]  (otherwise)
 
-	[To install a new python package in the current environment]:
+	[To install a new python package]:
 	conda install [package name]
 	conda install -c [channel name, e.g. conda-forge] [package name]
 	pip install
 
-    There are ways to automate this process inside Windows shortcuts, if you
-    are so inclined, but that is beyond the scope of this readme.
-
-
+    Note there is no reason you need use the exact version numbers
+    specified in the environment.yml file; these are just known versions that
+    seem to reliably avoid any errors with the installation of numpy, which
+    sometimes fails with certain package version combinations. Packages can
+    be updated and new packages may be installed into your virtual environment
+    by normal command line methods while inside the virtual environment,
+    and these updates/installations will remain local to that environment.
+    Alternatively, you can edit the environment.yml file to your liking before
+    creating your virtual environment from it, so that others can repeat
+    your process by using your environment.yml.
 
 
 
