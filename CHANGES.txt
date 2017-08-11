@@ -1,3 +1,4 @@
 Version number stored in __init__.py of main package!
 
 v0.0.1 - first online version of this repository
+v0.0.2 - updated readme
