@@ -21,6 +21,17 @@ Last updated: 8/11/2017
     (available at https://git-scm.com/downloads ), as its Git Bash is a
     useful tool for using Git on Windows machines.
 
+    You may wish to check a tutorial for some basic details on setting
+    up and using Git. While we will be using GitHub instead of BitBucket
+    as our online repository, the latter's website is still an extremely
+    informative source, and 99+% of it still applies to our usage:
+    https://www.atlassian.com/git/tutorials/install-git#windows
+
+    In particular, make sure to set up your credentials.
+    e.g. in Git Bash, type:
+        git config --global user.name "Your Name Comes Here"
+        git config --global user.email you@yourdomain.example.com
+
 -3. After setting up Git, use "git clone" to pull a copy of directory onto
     your computer, automatically set up to track shared online version.
 
@@ -49,10 +60,11 @@ Last updated: 8/11/2017
     Other folks are free to fork the repository, of course!
 
     --Detailed Instructions--
-    To switch your local repository to the latest release branch, type
-    in the Git Bash (while in the repository):
+    To switch your local repository to any given branch, use the
+    "git checkout" command in the Git Bash (while in the repository).
+    For example, to switch to the latest release ("master" branch), type:
         git checkout master
-    Whereas to switch to the active development branch, type:
+    Whereas to switch to the active development branch ("develop"), type:
         git checkout develop
     To create and switch to your own working branch off develop, type:
         git checkout -b [yourname]_working_branch develop
@@ -63,7 +75,23 @@ Last updated: 8/11/2017
     You will need the vsihlab GitHub credentials for this step.
 
     --Further Advice--
-    -A. Please see the section on version control below!
+    90% of your git usage will be the same small set of commands,
+    all in your own working branch, and the rest can be done with
+    the guidance of the repository maintainer. As such, it's not
+    necessary for everyone to understand everything about Git.
+    Here are the most important things you should know:
+    -A. Good sources of information:
+        - The version control section later in this readme
+        - [reference/tutorials]
+            -[simple beginner's intro]
+                http://rogerdudler.github.io/git-guide/
+            -[cheatsheet, and site full of tutorials]
+                https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet
+        - ["gitflow" workflow explanations]
+            -[original outline]
+                http://nvie.com/posts/a-successful-git-branching-model/
+            -[alternate explanation]
+                https://www.atlassian.com/git/tutorials/comparing-workflows#gitflow-workflow
     -B. Fetch online updates and merge them before you start working,
         particularly if you've switched computers. Git makes it easy
         to keep code synced across computers, once you learn a few
@@ -76,12 +104,13 @@ Last updated: 8/11/2017
         and easily rolled back to previous commit.
         Get used to this workflow:
             git status    [to list all changes]
-            [for each changed file:]
-                [to examine changes:] git diff [filename]
-                [to keep changes:] git add [filename]
-                [to revert changes:] git checkout [filename]
-            [alternatively, to just add all file changes:] git add .
+            [to add all file changes:] git add .
+            [OR, for each changed file -]
+                [- to examine changes:] git diff [filename]
+                [- to keep changes:] git add [filename]
+                [- to revert changes:] git checkout -- [filename]
             git commit -m "message describing changes"
+            git push origin
     -D. Google is your friend for Git help! But here are the most
         common commands you should probably know:
             - To swap out all files for those of another branch
@@ -270,8 +299,13 @@ Last updated: 8/11/2017
     "_nogit_" anywhere in the file or folder name.
 -F. Sih group members: to integrate individual fixes into the shared
     development branch and to push out stable releases, we follow the
-    Git repository model explained at the following URL:
+    "Gitflow" repository model explained at the following URL:
     http://nvie.com/posts/a-successful-git-branching-model
+
+    Another explanation with pictures and examples can be found here:
+    https://www.atlassian.com/git/tutorials/comparing-workflows#gitflow-workflow
+
+   __Feel free to come back to this part later__
 
     Summaries of this git repo style:
     -1. "Master" branch is reserved for trusted, stable versions.
