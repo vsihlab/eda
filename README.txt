@@ -280,21 +280,6 @@ Last updated: 8/11/2017
     However, Sih group members may also want to share/sync some notebooks
     by saving them in the package repository and commiting them to their
     own working branch.
-    NOTE: If you commit notebooks to the shared repository, even on your
-          own working branch, please avoid large file/image sizes to avoid
-          repository size bloat for everyone. This is NOT a problem if you
-          create a separate personal repository elsewhere with "git init".
-          So if you normally create large figures with a command like
-              plt.figure(figsize=(12,8))
-          Consider replacing such commands with something like
-              plt.figure(figsize=WIDE_FIGURE_SIZE)
-          where WIDE_FIGURE_SIZE is a global variable that can be
-          easily changed at the start of the notebook to generate
-          smaller figures before saving to the shared repository.
-          e.g. at the top of the notebook:
-              # WIDE_FIGURE_SIZE = (12, 8)  # normal use (commented out)
-              WIDE_FIGURE_SIZE = (4, 3)  # small version for shared repo
-          See the /examples directory for notebooks that do this.
 -E. To disable version control for a file stored in the repository, put
     "_nogit_" anywhere in the file or folder name.
 -F. Sih group members: to integrate individual fixes into the shared
@@ -304,8 +289,6 @@ Last updated: 8/11/2017
 
     Another explanation with pictures and examples can be found here:
     https://www.atlassian.com/git/tutorials/comparing-workflows#gitflow-workflow
-
-   __Feel free to come back to this part later__
 
     Summaries of this git repo style:
     -1. "Master" branch is reserved for trusted, stable versions.
@@ -336,88 +319,36 @@ Last updated: 8/11/2017
 -H. While it's easy for everyone to just go their own way forever,
     as people find bugs and add features it is important that group
     members share their improvements by extracting them to feature
-    branches for sharing with others. You can do this by checking out
-    a new feature branch off develop and importing the new and/or
-    changed files from your own working branch:
+    branches for sharing with others. For help here, contact the
+    current maintainer of the Git repository. But the gist is that
+    you check out a new feature branch off develop, then import
+    the new and/or changed files from your own working branch:
         git checkout -b [new feature branch name] develop
         [for each new/changed file to share:]
             git checkout [your working branch name] -- [filename]
         git add .
         git commit -m "extracted changes from working branch"
-    Then you can follow the website's instructions for implementing
-    feature branches, in conjunction with the repo maintainer:
-    http://nvie.com/posts/a-successful-git-branching-model
+    Then you can work with the repository maintainer to decide what
+    changes, if any, need to be made before rolling the feature
+    branch into the shared develop branch.
 -I. Etiquette is yet to be determined, but probably don't merge your
     working or feature branches into develop/main without talking to
     the repository maintainer.
-
-
-
-[ BELOW THIS LINE IS ALL OLD AND LIKELY OUTDATED ]
------------------------------------------------------------------
-
-
-
-
-
-
-DOCUMENTATION:
--Erm, none yet. Except this readme and function docstrings.
--Paused work on implementing auto-generated documentation from the "docstrings"
-    at the beginning of each python function/class/etc, using Sphinx.
-    Should probably get back to that sometime.
--Note that version number is stored in top level __init__.py file
-    (eda\__init__.py) as "__version__ = 'X.X.X'"
-    Both Sphinx and setuptools can read this variable; only git does not
-    automatically tag version numbers (or even push version tags automatically)
-
-
-PACKAGE INSTALLATION [NON-ANACONDA, OUTDATED]:
--Not necessary to "install" in order to run, but doing a develop install (see
-    below) allows you to run your scripts from anywhere on the computer,
-    as otherwise they have to be run from the project root directory in order
-    for the script to see the project modules
--Command line "python setup.py develop" - create in current python environment
-    a fake package that links to the current work folder. Uninstall with
-    "python setup.py develop --uninstall"
--Command line "python setup.py test" - run tests of everything in the tests
-    folder using pytest. Not for installation, but great for testing!
--Command line "python setup.py install" - actually create a real install
-    with a snapshot of the current work folder copied into ./lib/sitepackages
-    not recommended, confuses installed version with work-in-progress version
--Note "install_requires" line of the setuptools script is borked, preventing
-    an easy auto-install of required packages. Needs fixing, sorry.
-
-IMPLEMENTATION NOTES ON ITERATORS AND ITERABLES [MOSTLY OUTDATED]:
--Most functions are set to accept iterables instead of say, lists. This means
-    you can send it a list, a tuple, or even an iterator.
--Returning iterators is good practice if you can lazily process it. However,
-    this can get confusing for people unfamiliar with the practice, as code
-    that seems self-explanatory can fail:
-        a = fcn_that_returns_iterator_instead_of_list()
-        #  a = list(a) <- would fix problem, puts a's values in permanent list
-        for x in a:
-            print(x)  # runs fine, prints everything in a
-        for x in a:
-            print(x)  # _does nothing_, a is exhausted by previous loop
--In python 3.x, important built-in functions return iterators, e.g. zip()
--However, I've been moving towards returning lists instead of iterators.
-    If code uses "list(fcn_returning_iterator_or_list)" everywhere it doesn't
-    matter anyway, and processes like filtering tend to ruin the speedup.
-    For our purposes the speed gains are unlikely to be worth the confusion.
--EXCEPTION: Parsing modules should evaluate lazily, and return iterators
-    instead of lists. This is because one may want to process large amounts
-    of data (e.g. a hard drive's worth), and by putting all the data in a list
-    we force Python to read and store all the data at once!
-    Note databrowser.py and scandatasetprocessing.py keep all data loaded at
-    once, but future programs and modules by no means need to.
--RECOMMENDATION: whenever accepting a list/iterator/whatever from a function,
-    use something like "returned_list = list(returned_list)" or similar
-    to ensure iterators, iterables, tuples, etc. all transformed into a list.
-    This means if that function is changed and the output type is modified,
-    your code doesn't break. HOWEVER, despite the loss of speed, I recommend
-    just returning a list rather than using fancy "yield" syntax to return
-    iterators. This can be up for debate in the future.
+    NOTE: If you commit notebooks to the shared repository, even on your
+          own working branch, please avoid large file/image sizes to avoid
+          repository size bloat for everyone. This is NOT a problem if you
+          create a separate personal repository elsewhere with "git init".
+          So if you normally create large figures with a command like
+              plt.figure(figsize=(12,8))
+          Consider replacing such commands with something like
+              plt.figure(figsize=WIDE_FIGURE_SIZE)
+          where WIDE_FIGURE_SIZE is a global variable that can be
+          easily changed at the start of the notebook to generate
+          smaller figures before saving to the shared repository.
+          e.g. at the top of the notebook:
+              # WIDE_FIGURE_SIZE = (12, 8)  # normal use (commented out)
+              WIDE_FIGURE_SIZE = (4, 3)  # small version for shared repo
+          See the /examples directory for notebooks that do this.
 
 
 
