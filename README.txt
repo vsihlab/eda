@@ -98,6 +98,11 @@ Last updated: 8/11/2017
         commands. Get used to typing:
             git fetch    [to check for online updates]
             git merge    [to merge online updates into current branch]
+
+        Periodically you will want to merge in changes others have
+        made to the develop branch into your working branch as well.
+        Unless there is a direct conflict, it will be instant:
+            git merge develop
     -C. Commit file changes to your working branch ASAP, and always
         immediately push those changes to the online repository.
         This, combined with (B), keeps code synced across computers

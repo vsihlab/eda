@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from eda.simulations.simple_trkr_rsa_simulation \
+from eda.models.simple_trkr_rsa_simulation \
     import get_pulse_sum_vector, \
            trkr_decaying_cosine
 

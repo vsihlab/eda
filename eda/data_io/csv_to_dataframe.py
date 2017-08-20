@@ -132,6 +132,7 @@ def process_directory_csvs_to_dataframes(parent_dir,
         file_dataframes_list.append(file_dataframe)
         file_metadata_list.append(file_metadata)
         filtered_file_list_index += 1
-    return filtered_filepath_list, file_dataframes_list, file_metadata_list
+    return file_dataframes_list, file_metadata_list
+#     return filtered_filepath_list, file_dataframes_list, file_metadata_list
 
 
