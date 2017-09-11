@@ -85,13 +85,15 @@ def process_directory_csvs_to_dataframes(parent_dir,
                 file_dataframe = \
                     pd.read_csv(filepath_or_buffer=file_lines_iterator,
                                 **pandas_read_csv_kwargs)
-            except pd.errors.ParserError:
+            except pd.errors.ParserError as err:
                 print("Pandas read_csv parser error, skipping file...")
                 print("Filepath: {}".format(filepath))
+                print(err)
                 continue
-            except pd.errors.EmptyDataError:
+            except pd.errors.EmptyDataError as err:
                 print("No data found, skipping file...")
                 print("Filepath: {}".format(filepath))
+                print(err)
                 continue
             except StopIteration:
                 print("Problem encountered in process_directory_csvs_to_dataframes():")
