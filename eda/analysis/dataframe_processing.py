@@ -104,6 +104,48 @@ def df_extract_vector_lists_by_dataset(df, column_names):
                  for colname in column_names]]
 
 
+def get_2d_indexed_df(df):
+    """
+    Upscale or downscale the number of index levels in
+    a DataFrame to ensure an exactly two-level MultiIndex.
+    If the DataFrame has exactly two MultiIndex levels,
+        nothing happens.
+    If the DataFrame has more than two MultiIndex levels,
+        all but the first level are reset as columns and
+        a new string-valued second column is created
+        with string indices concatenating the old ones,
+        e.g. row index: [0, 0, 3] -> ["0, 0", 3]
+    If the DataFrame has only a one-level Index, the new
+        second level will have no name (name set to None)
+        and all rows will have index value ''.
+    Return format: (new_dataframe, list_of_removed_index_names)
+    """
+    if df.index.nlevels == 2:
+        return df.copy(), []
+    elif df.index.nlevels > 2:
+        extra_index_levels = list(range(df.index.nlevels - 1))
+        extra_level_names = list(np.array(df.index.names)[extra_index_levels])
+        extra_level_names_str = ', '.join(extra_level_names)
+        dummy_index_format_str = \
+            ', '.join(('{0[' + str(level) + ']}') for level in extra_index_levels)
+        new_index = [df.index.map(dummy_index_format_str.format),
+                     df.index.get_level_values(-1)]
+        new_df = df.reset_index(level=extra_index_levels)
+        new_df.index = new_index
+        new_df.index.set_names(extra_level_names_str, level=-2, inplace=True)
+        return new_df, extra_level_names
+    elif df.index.nlevels == 1:
+        new_index = [df.index.map(lambda x: ''),
+                     df.index.get_level_values(-1)]
+        new_df = df.copy()
+#         new_df = df.reset_index(level=extra_index_levels)
+        new_df.index = new_index
+        new_df.index.set_names(None, level=-2, inplace=True)
+        return new_df, []
+    else:  # ? edge case
+        raise NotImplementedError('Huh? {} levels?'.format(df.index.nlevels))
+
+
 def df_transform_dataset_df_to_fit_row(df, group_fit_params_dict,
                                        fit_params_to_add,
                                        column_aggregation_dict={},
@@ -142,6 +184,13 @@ def df_transform_dataset_df_to_fit_row(df, group_fit_params_dict,
             index_2d  
                    4      0.2    40.0          20.0
     """
+    try:
+        assert isinstance(df, pd.DataFrame)
+    except AssertionError:
+        if isinstance(df, pd.Series):
+            raise ValueError('Attribute df: received a Series instead of a DataFrame.')
+        else:
+            raise ValueError('Attribute df: did not receive a DataFrame.')
     new_df = df.head(1)
     for colname in list(new_df):
         if colname in column_aggregation_dict.keys():
@@ -163,6 +212,7 @@ def df_transform_dataset_df_to_fit_row(df, group_fit_params_dict,
                 if param.stderr != 0:
                     param_error_str = param_name + '_error'
                     new_df[param_error_str] = param.stderr
+    new_df.fillna(np.nan, inplace=True)
     # groupby().apply() + squeeze() = 1-row-df -> series -> row-in-new-df
     # (returning a 1-row-df to apply() -> get doubled index, obnoxiously)
     # might need to revisit this sometime
@@ -182,14 +232,7 @@ def df_minimize_fcn_on_datasets(df, residuals_fcn, fit_params,
     and adds all fit params to dataframe.
     """
     # 2-level index required, so demote extra indices to cols
-    extra_index_levels = list(range(df.index.nlevels - 1))
-    extra_level_names = list(np.array(df.index.names)[extra_index_levels])
-    dummy_index_format_str = \
-        ', '.join(('{0[' + str(level) + ']}') for level in extra_index_levels)
-    new_index = [df.index.map(dummy_index_format_str.format),
-                 df.index.get_level_values(-1)]
-    df = df.reset_index(level=extra_index_levels)
-    df.index = new_index
+    df, extra_level_names = get_2d_indexed_df(df)
 
     # processing 2d df
     all_cols = independent_vars_columns + [measured_data_column]
@@ -215,7 +258,10 @@ def df_minimize_fcn_on_datasets(df, residuals_fcn, fit_params,
                             fit_params_to_add,
                             column_aggregation_dict,
                             keep_const_columns)
+    if isinstance(new_df, pd.Series):  # sometimes fails to unstack
+        new_df = new_df.unstack(level=-1)
     new_df['result_index'] = np.arange(len(dataset_results_list))
+    new_df.fillna(np.nan, inplace=True)
 
     # re-add extra indices:
     new_df.set_index(extra_level_names,
