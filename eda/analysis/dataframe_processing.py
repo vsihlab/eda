@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from lmfit import minimize
+from lmfit import minimize, Parameters
 
 def df_extract_dataset_indexed_matrices(df, column_names):
     """
@@ -106,6 +106,8 @@ def df_extract_vector_lists_by_dataset(df, column_names):
 
 def get_2d_indexed_df(df):
     """
+    *WARNING, changes sort order (numeric vs alphanumeric)*
+
     Upscale or downscale the number of index levels in
     a DataFrame to ensure an exactly two-level MultiIndex.
     If the DataFrame has exactly two MultiIndex levels,
@@ -126,8 +128,13 @@ def get_2d_indexed_df(df):
         extra_index_levels = list(range(df.index.nlevels - 1))
         extra_level_names = list(np.array(df.index.names)[extra_index_levels])
         extra_level_names_str = ', '.join(extra_level_names)
+#         # CHANGES SORTING WHEN LEADING ZEROS PRESENT (ALPHANUMERIC vs NUMERIC)
+#         dummy_index_format_str = \
+#             ', '.join(('{0[' + str(level) + ']}') for level in extra_index_levels)
+        # fixed:
         dummy_index_format_str = \
-            ', '.join(('{0[' + str(level) + ']}') for level in extra_index_levels)
+            ', '.join(('{0[' + str(level) + ']:09.03f}')
+                      for level in extra_index_levels)
         new_index = [df.index.map(dummy_index_format_str.format),
                      df.index.get_level_values(-1)]
         new_df = df.reset_index(level=extra_index_levels)
@@ -232,23 +239,29 @@ def df_minimize_fcn_on_datasets(df, residuals_fcn, fit_params,
     and adds all fit params to dataframe.
     """
     # 2-level index required, so demote extra indices to cols
-    df, extra_level_names = get_2d_indexed_df(df)
+    df, extra_level_names = get_2d_indexed_df(df)  # WARNING, changes sort order
 
     # processing 2d df
     all_cols = independent_vars_columns + [measured_data_column]
     dataset_vecs_list = df_extract_vector_lists_by_dataset(df, all_cols)
     dataset_results_list = []  # will be in order of multiindex' outer indexing
     dataset_fit_params_list = []
-    for vecs in dataset_vecs_list:
+    if type(next(iter(fit_params))) == Parameters:
+        fit_params_list = fit_params
+    else:
+        fit_params_list = [fit_params.copy()
+                           for _ in range(len(dataset_vecs_list))]
+    for vecs, init_fit_params in zip(dataset_vecs_list, fit_params_list):
         xvecs = vecs[:-1]
         yvec = vecs[-1]
         # TODO: add option to scalar-ize as many as all-but-one vectors if const?
-        result = minimize(residuals_fcn, fit_params,
+        result = minimize(residuals_fcn, init_fit_params,
                           args=(*xvecs, yvec, *res_args),
                           kws=res_kwargs)
         dataset_results_list.append(result)
         dataset_fit_params_list.append(result.params)
-    dataset_indices = df.index.levels[-2].values
+#     dataset_indices = df.index.levels[-2].values  # alphanumeric vs numeric sort fuckery d;lkfjasd;lkfj
+    dataset_indices = df.index.get_level_values(-2).unique()
     group_fit_params_dict = dict(zip(dataset_indices,
                                      dataset_fit_params_list))
     fit_params_to_add = list(result.params)

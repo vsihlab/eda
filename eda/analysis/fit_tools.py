@@ -22,7 +22,8 @@ def create_residuals_fcn(fit_function, independent_var_names):
     def residuals_fcn(params, *args, measured_data=None, **kwargs):
         param_values = params.valuesdict()
         matched_fcn_param_values = {key: param_values[key]
-                                    for key in fcn_params_set}
+                                    for key in fcn_params_set
+                                    if key in param_values.keys()}
         arglist = list(args)  # going to parse through this
         args_index = 0
         indep_vars_list = []
