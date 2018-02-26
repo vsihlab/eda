@@ -10,6 +10,26 @@ import pandas as pd
 
 import eda.analysis.dataframe_processing as dfproc
 
+def colorstr_generator():
+    ind = 0
+    while True:
+        ind += 1
+        yield 'C' + str(ind % 10)
+
+def arrowplot(xvals, yvals, colorstr, ax,
+              width=1.5, headwidth=7.5, headlength=7.5,
+              **plot_kwargs):
+    ax.plot(xvals, yvals, colorstr + '-', **plot_kwargs)
+    lastxval, lastyval = None, None
+    for xval, yval in zip(xvals, yvals):
+        if lastxval is not None:
+            ax.annotate("", xy=(xval, yval),
+                        xytext=(lastxval, lastyval),
+                        arrowprops=dict(width=width, fc=colorstr,
+                                        headwidth=headwidth,
+                                        headlength=headlength))
+        lastxval, lastyval = xval, yval
+
 def get_dataframe_XYZ_pivot_tables(df, data_column,
                                    x_values_column=None,
                                    y_values_column=None,
@@ -25,6 +45,9 @@ def get_dataframe_XYZ_pivot_tables(df, data_column,
     (or rightmost index), y_values column values (or 2nd-to-rightmost index),
     then data_column values, respectively, of the original dataframe rows
     that correspond to each new (x, y) coordinate.
+
+    WARNING: Setting the fill_value to anything but np.nan may have
+    unintended consequences for X and Y, for reasons unknown
     """
     # flatten as pivot_table() handles errors much better than unstack()
     if df.index.nlevels == 1:
@@ -70,7 +93,8 @@ def get_dataframe_XYZ_pivot_tables(df, data_column,
 def get_dataframe_2d_matrix_and_axes_vecs(df, data_column,
                                           x_values_column=None,
                                           y_values_column=None,
-                                          fill_value=np.nan):
+                                          fill_value=np.nan,
+                                          force_no_xvals_conflicts=False):
     """
     Pivots dataframe around rightmost multi-index, or around x_values
     if dataframe is single-index, with the value given by data_column.
@@ -82,11 +106,60 @@ def get_dataframe_2d_matrix_and_axes_vecs(df, data_column,
     Furthermore, uses [x/y]_values_column to return the coordinate arrays
     along each axis, even if they are non-linear or unsorted. If not
     given, index values are used instead.
+
+    Parameter force_no_xvals_conflicts is for cases where there is not
+    a unique x-value for each x-index (rightmost multi-index level).
+    e.g.          x-value   y-value  ...
+         (0, 0) |       0        10  ...
+         (0, 1) |       1      11.5  ...
+         (1, 0) |     0.5        12  ...
+         (1, 1) |     1.5      12.5  ...
+    This is accomplished by making all x-indices unique, effectively
+    turning X and Z pivot tables into a diagonal block matrix so as
+    to give unique values for each column and thus x-vector.
+        force_no_xvals_conflicts=False, same xvals per x-index:
+                   0     1
+            0 |  0.0   1.0    ->   x-vector: (0, 1)
+            1 |  0.0   1.0
+        force_no_xvals_conflicts=False, different xvals per x-index:
+                   0     1
+            0 |  0.0   1.0    ->   x-vector: (0.25, 1.25)
+            1 |  0.5   1.5
+        force_no_xvals_conflicts=True, different xvals per x-index:
+                 0,0   0,1   1,0   1,1
+            0 |  0.0   1.0   NaN   NaN ->   x-vector:
+            1 |  NaN   NaN   0.5   1.5      (0, 1, 0.5, 1.5)
+
+    This also turns Z into a diagonal block matrix, meaning this
+    option is _not_ reccomended for colorplots!
+
+    WARNING: Setting the fill_value to anything but np.nan may have
+    unintended consequences for X and Y, for reasons unknown
     """
     X, Y, Z = get_dataframe_XYZ_pivot_tables(df, data_column,
                                              x_values_column,
                                              y_values_column,
                                              fill_value)
+    xval_stds = X[df.index.get_level_values(-1).unique()].std()
+    xval_stds.fillna(0, inplace=True)
+    have_xval_conflicts = np.logical_or.reduce(xval_stds.values > 0)
+    if force_no_xvals_conflicts and have_xval_conflicts:
+        both_index_levels = list(range(df.index.nlevels))
+        both_level_names = list(np.array(df.index.names)[both_index_levels])
+        both_level_names_str = ', '.join(both_level_names)
+        dummy_index_format_str = \
+            ', '.join(('{0[' + str(level) + ']:09.03f}')
+                      for level in both_index_levels)
+        new_index = [df.index.get_level_values(-2),
+                     df.index.map(dummy_index_format_str.format)]
+        new_df = df.reset_index(level=both_index_levels, drop=True)
+        new_df.index = new_index
+        new_df.index.set_names(both_level_names_str, level=-1, inplace=True)
+        X, Y, Z = get_dataframe_XYZ_pivot_tables(new_df, data_column,
+                                                 x_values_column,
+                                                 y_values_column,
+                                                 fill_value)
+    # TODO: also fix yvals
     x_s = X.mean()  # pd.Series w/ALL values spread across rows
     y_s = Y.T.mean()  # TODO: fix special case of non-np.nan fill values
     return x_s.values, y_s.values, Z.values
@@ -162,12 +235,19 @@ def plot_dataframe_waterfall(df, data_column,
                              fill_value=np.nan,
                              xlabel=None, ylabel=None,
                              ax=None, add_legend=True,
+                             use_arrowplot=False,
+                             arrow_width=1.0,
+                             arrow_headwidth=5.0,
+                             arrow_headlength=5.0,
                              **plot_kwargs):
+    df2d, _ = dfproc.get_2d_indexed_df(df)
     xvec, yvec, Zmat = \
-        get_dataframe_2d_matrix_and_axes_vecs(df, data_column,
+        get_dataframe_2d_matrix_and_axes_vecs(df2d,
+                                              data_column,
                                               x_values_column,
                                               y_values_column,
-                                              fill_value)
+                                              fill_value,
+                                              force_no_xvals_conflicts=True)
     if x_values_column is None:  # disregard original indices
         xvec = np.arange(len(xvec))
     if y_values_column is None:
@@ -179,19 +259,30 @@ def plot_dataframe_waterfall(df, data_column,
         waterfall_indices = num_waterfall_plots
     else:
         num_waterfall_plots = min(num_waterfall_plots, len(yvec))
+        if num_waterfall_plots <= 0:  # 0 or negative is max # plots
+            num_waterfall_plots = len(yvec)
         waterfall_indices = np.linspace(0, len(yvec) - 1,
                                         num_waterfall_plots)
     waterfall_indices = np.array(np.trunc(waterfall_indices),
                                  dtype=np.int)
     z_offset = 0
+    colorgen = colorstr_generator()
     for y_ind in waterfall_indices:
         zvals = Zmat[y_ind, :]
         valid_indices = ~np.isnan(zvals)
         zvals = zvals[valid_indices]
         zvals -= zvals.max()
-        ax.plot(xvec[valid_indices], zvals + z_offset,
-                'd-', label=str(yvec[y_ind]),
-                **plot_kwargs)
+        if use_arrowplot:
+            arrowplot(xvec[valid_indices], zvals + z_offset,
+                      next(colorgen), ax, 
+                      width=arrow_width,
+                      headwidth=arrow_headwidth,
+                      headlength=arrow_headlength,
+                      **plot_kwargs)
+        else:
+            ax.plot(xvec[valid_indices], zvals + z_offset,
+                    'd-', label=str(yvec[y_ind]),
+                    **plot_kwargs)
         z_offset += zvals.min()
     if add_legend:
         if len(waterfall_indices) < 10:

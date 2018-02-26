@@ -104,7 +104,7 @@ def df_extract_vector_lists_by_dataset(df, column_names):
                  for colname in column_names]]
 
 
-def get_2d_indexed_df(df):
+def get_2d_indexed_df(df, descriptive_index=False):
     """
     *WARNING, changes sort order (numeric vs alphanumeric)*
 
@@ -112,11 +112,23 @@ def get_2d_indexed_df(df):
     a DataFrame to ensure an exactly two-level MultiIndex.
     If the DataFrame has exactly two MultiIndex levels,
         nothing happens.
-    If the DataFrame has more than two MultiIndex levels,
+    If the DataFrame has more than two MultiIndex levels
+        and the "descriptive_index" parameter is True,
         all but the first level are reset as columns and
         a new string-valued second column is created
         with string indices concatenating the old ones,
         e.g. row index: [0, 0, 3] -> ["0, 0", 3]
+    If the DataFrame has more than two MultiIndex levels
+        and the "descriptive_index" parameter is False,
+        all but the first level are reset as columns and
+        a new integer-valued second column is created
+        where the integers are guaranteed to correspond
+        1:1 to the strings given when "descriptive_index"
+        is True, and preserving ordering. This option
+        is default as there is no risk of alphanumeric
+        sorting of new index strings being different than
+        the numeric sorting of previous indices.
+        e.g. row index: [0, 0, 3] -> [0, 3]
     If the DataFrame has only a one-level Index, the new
         second level will have no name (name set to None)
         and all rows will have index value ''.
@@ -131,12 +143,20 @@ def get_2d_indexed_df(df):
 #         # CHANGES SORTING WHEN LEADING ZEROS PRESENT (ALPHANUMERIC vs NUMERIC)
 #         dummy_index_format_str = \
 #             ', '.join(('{0[' + str(level) + ']}') for level in extra_index_levels)
-        # fixed:
-        dummy_index_format_str = \
-            ', '.join(('{0[' + str(level) + ']:09.03f}')
-                      for level in extra_index_levels)
-        new_index = [df.index.map(dummy_index_format_str.format),
-                     df.index.get_level_values(-1)]
+        # fixed sorting issues for most strings:
+        if descriptive_index:
+            dummy_index_format_str = \
+                ', '.join(('{0[' + str(level) + ']:09.03f}')
+                          for level in extra_index_levels)
+            new_index = [df.index.map(dummy_index_format_str.format),
+                         df.index.get_level_values(-1)]
+        else:
+            def index_mapper(index):
+                extra_level_indices = index[:-1]
+                startiloc = df.index.get_loc(extra_level_indices).start
+                return startiloc
+            new_index = [df.index.map(index_mapper),
+                         df.index.get_level_values(-1)]
         new_df = df.reset_index(level=extra_index_levels)
         new_df.index = new_index
         new_df.index.set_names(extra_level_names_str, level=-2, inplace=True)
