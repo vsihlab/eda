@@ -18,10 +18,13 @@ def colorstr_generator():
 
 def arrowplot(xvals, yvals, colorstr, ax,
               width=1.5, headwidth=7.5, headlength=7.5,
-              **plot_kwargs):
+              skip_inds=None, **plot_kwargs):
     ax.plot(xvals, yvals, colorstr + '-', **plot_kwargs)
     lastxval, lastyval = None, None
-    for xval, yval in zip(xvals, yvals):
+    for ind, (xval, yval) in enumerate(zip(xvals, yvals)):
+        if skip_inds is not None:
+            if ind in skip_inds:
+                lastxval = None
         if lastxval is not None:
             ax.annotate("", xy=(xval, yval),
                         xytext=(lastxval, lastyval),
