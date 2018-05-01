@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from lmfit import minimize
+from lmfit import minimize, Parameters
 
 def df_extract_dataset_indexed_matrices(df, column_names):
     """
@@ -104,6 +104,75 @@ def df_extract_vector_lists_by_dataset(df, column_names):
                  for colname in column_names]]
 
 
+def get_2d_indexed_df(df, descriptive_index=False):
+    """
+    *WARNING, changes sort order (numeric vs alphanumeric)*
+
+    Upscale or downscale the number of index levels in
+    a DataFrame to ensure an exactly two-level MultiIndex.
+    If the DataFrame has exactly two MultiIndex levels,
+        nothing happens.
+    If the DataFrame has more than two MultiIndex levels
+        and the "descriptive_index" parameter is True,
+        all but the first level are reset as columns and
+        a new string-valued second column is created
+        with string indices concatenating the old ones,
+        e.g. row index: [0, 0, 3] -> ["0, 0", 3]
+    If the DataFrame has more than two MultiIndex levels
+        and the "descriptive_index" parameter is False,
+        all but the first level are reset as columns and
+        a new integer-valued second column is created
+        where the integers are guaranteed to correspond
+        1:1 to the strings given when "descriptive_index"
+        is True, and preserving ordering. This option
+        is default as there is no risk of alphanumeric
+        sorting of new index strings being different than
+        the numeric sorting of previous indices.
+        e.g. row index: [0, 0, 3] -> [0, 3]
+    If the DataFrame has only a one-level Index, the new
+        second level will have no name (name set to None)
+        and all rows will have index value ''.
+    Return format: (new_dataframe, list_of_removed_index_names)
+    """
+    if df.index.nlevels == 2:
+        return df.copy(), []
+    elif df.index.nlevels > 2:
+        extra_index_levels = list(range(df.index.nlevels - 1))
+        extra_level_names = list(np.array(df.index.names)[extra_index_levels])
+        extra_level_names_str = ', '.join(extra_level_names)
+#         # CHANGES SORTING WHEN LEADING ZEROS PRESENT (ALPHANUMERIC vs NUMERIC)
+#         dummy_index_format_str = \
+#             ', '.join(('{0[' + str(level) + ']}') for level in extra_index_levels)
+        # fixed sorting issues for most strings:
+        if descriptive_index:
+            dummy_index_format_str = \
+                ', '.join(('{0[' + str(level) + ']:09.03f}')
+                          for level in extra_index_levels)
+            new_index = [df.index.map(dummy_index_format_str.format),
+                         df.index.get_level_values(-1)]
+        else:
+            def index_mapper(index):
+                extra_level_indices = index[:-1]
+                startiloc = df.index.get_loc(extra_level_indices).start
+                return startiloc
+            new_index = [df.index.map(index_mapper),
+                         df.index.get_level_values(-1)]
+        new_df = df.reset_index(level=extra_index_levels)
+        new_df.index = new_index
+        new_df.index.set_names(extra_level_names_str, level=-2, inplace=True)
+        return new_df, extra_level_names
+    elif df.index.nlevels == 1:
+        new_index = [df.index.map(lambda x: ''),
+                     df.index.get_level_values(-1)]
+        new_df = df.copy()
+#         new_df = df.reset_index(level=extra_index_levels)
+        new_df.index = new_index
+        new_df.index.set_names(None, level=-2, inplace=True)
+        return new_df, []
+    else:  # ? edge case
+        raise NotImplementedError('Huh? {} levels?'.format(df.index.nlevels))
+
+
 def df_transform_dataset_df_to_fit_row(df, group_fit_params_dict,
                                        fit_params_to_add,
                                        column_aggregation_dict={},
@@ -142,6 +211,13 @@ def df_transform_dataset_df_to_fit_row(df, group_fit_params_dict,
             index_2d  
                    4      0.2    40.0          20.0
     """
+    try:
+        assert isinstance(df, pd.DataFrame)
+    except AssertionError:
+        if isinstance(df, pd.Series):
+            raise ValueError('Attribute df: received a Series instead of a DataFrame.')
+        else:
+            raise ValueError('Attribute df: did not receive a DataFrame.')
     new_df = df.head(1)
     for colname in list(new_df):
         if colname in column_aggregation_dict.keys():
@@ -163,6 +239,7 @@ def df_transform_dataset_df_to_fit_row(df, group_fit_params_dict,
                 if param.stderr != 0:
                     param_error_str = param_name + '_error'
                     new_df[param_error_str] = param.stderr
+    new_df.fillna(np.nan, inplace=True)
     # groupby().apply() + squeeze() = 1-row-df -> series -> row-in-new-df
     # (returning a 1-row-df to apply() -> get doubled index, obnoxiously)
     # might need to revisit this sometime
@@ -182,30 +259,29 @@ def df_minimize_fcn_on_datasets(df, residuals_fcn, fit_params,
     and adds all fit params to dataframe.
     """
     # 2-level index required, so demote extra indices to cols
-    extra_index_levels = list(range(df.index.nlevels - 1))
-    extra_level_names = list(np.array(df.index.names)[extra_index_levels])
-    dummy_index_format_str = \
-        ', '.join(('{0[' + str(level) + ']}') for level in extra_index_levels)
-    new_index = [df.index.map(dummy_index_format_str.format),
-                 df.index.get_level_values(-1)]
-    df = df.reset_index(level=extra_index_levels)
-    df.index = new_index
+    df, extra_level_names = get_2d_indexed_df(df)  # WARNING, changes sort order
 
     # processing 2d df
     all_cols = independent_vars_columns + [measured_data_column]
     dataset_vecs_list = df_extract_vector_lists_by_dataset(df, all_cols)
     dataset_results_list = []  # will be in order of multiindex' outer indexing
     dataset_fit_params_list = []
-    for vecs in dataset_vecs_list:
+    if type(next(iter(fit_params))) == Parameters:
+        fit_params_list = fit_params
+    else:
+        fit_params_list = [fit_params.copy()
+                           for _ in range(len(dataset_vecs_list))]
+    for vecs, init_fit_params in zip(dataset_vecs_list, fit_params_list):
         xvecs = vecs[:-1]
         yvec = vecs[-1]
         # TODO: add option to scalar-ize as many as all-but-one vectors if const?
-        result = minimize(residuals_fcn, fit_params,
+        result = minimize(residuals_fcn, init_fit_params,
                           args=(*xvecs, yvec, *res_args),
                           kws=res_kwargs)
         dataset_results_list.append(result)
         dataset_fit_params_list.append(result.params)
-    dataset_indices = df.index.levels[-2].values
+#     dataset_indices = df.index.levels[-2].values  # alphanumeric vs numeric sort fuckery d;lkfjasd;lkfj
+    dataset_indices = df.index.get_level_values(-2).unique()
     group_fit_params_dict = dict(zip(dataset_indices,
                                      dataset_fit_params_list))
     fit_params_to_add = list(result.params)
@@ -215,7 +291,10 @@ def df_minimize_fcn_on_datasets(df, residuals_fcn, fit_params,
                             fit_params_to_add,
                             column_aggregation_dict,
                             keep_const_columns)
+    if isinstance(new_df, pd.Series):  # sometimes fails to unstack
+        new_df = new_df.unstack(level=-1)
     new_df['result_index'] = np.arange(len(dataset_results_list))
+    new_df.fillna(np.nan, inplace=True)
 
     # re-add extra indices:
     new_df.set_index(extra_level_names,
