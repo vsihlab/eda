@@ -20,24 +20,25 @@ def create_residuals_fcn(fit_function, independent_var_names):
     sig = signature(fit_function)
     fcn_params_set = set(sig.parameters).difference(independent_var_names)
     def residuals_fcn(params, *args, measured_data=None, **kwargs):
+        new_kwargs_dict = {}
         param_values = params.valuesdict()
-        matched_fcn_param_values = {key: param_values[key]
-                                    for key in fcn_params_set
-                                    if key in param_values.keys()}
+        new_kwargs_dict.update({key: param_values[key]
+                                for key in fcn_params_set
+                                if key in param_values.keys()})
         arglist = list(args)  # going to parse through this
         args_index = 0
-        indep_vars_list = []
         posargs_okay = True
         for ind, name in enumerate(independent_var_names):
             if name in kwargs.keys():  # try filling w/ kwarg first
 #                 print('found ' + name + ' in kwargs')
 #                 print('   args remaining: {}'.format(arglist[args_index:]))
-                indep_vars_list.append(kwargs[name])
-                posargs_okay = False  # by python rules, only kwargs now
+                new_kwargs_dict[name] = kwargs[name]
+#                 posargs_okay = False  # nixed, why should order in indep_var_names matter?
+#                                       # OLD COMMENT: by python rules, only kwargs now
             elif posargs_okay and len(arglist) > args_index:
-#                 print('found ' + name + ' in args')
+#                 print('assuming pos. arg {} is {}'.format(args_index, name))
 #                 print('   args remaining: {}'.format(arglist[args_index + 1:]))
-                indep_vars_list.append(arglist[args_index])
+                new_kwargs_dict[name] = arglist[args_index]
                 args_index += 1
             else:  # no more pos. args, no kwarg match found
                 raise ValueError("residuals_fcn: failed to find all " +
@@ -54,8 +55,7 @@ def create_residuals_fcn(fit_function, independent_var_names):
                              "expecting params, {} ".format(n_indvars) +
                              "independent variables, and " +
                              "optionally a 'measured_data'.")
-        fit_function_results = fit_function(*indep_vars_list,
-                                            **matched_fcn_param_values)
+        fit_function_results = fit_function(**new_kwargs_dict)
         if measured_data is None:
             return fit_function_results
         else:

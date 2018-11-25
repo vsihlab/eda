@@ -41,6 +41,9 @@ def df_extract_dataset_indexed_matrices(df, column_names):
     if df.index.nlevels > 2:
         raise ValueError("dataframe multiindex should not exceed 2 levels")
     elif df.index.nlevels == 2:
+        df = df.copy()
+        fixed_index = df.index.remove_unused_levels()
+        df.index = fixed_index
         dataset_indices = df.index.levels[-2]
         # construct by unstack() [requires repeating inner index]
         mats = [df.unstack()[colname].values.copy()
@@ -253,10 +256,12 @@ def df_minimize_fcn_on_datasets(df, residuals_fcn, fit_params,
                                 keep_const_columns=True,
                                 **res_kwargs):
     """
-    Residuals function expected to take parameters
+    Residuals function is expected to take parameters
     (params, xvector1, xvector2, ..., yvector, *res_args, **res_kwargs)
     By default, drops all non-const columns in each dataset
     and adds all fit params to dataframe.
+
+    Note: Expects at least a 2d dataframe or will return a garbled index.
     """
     # 2-level index required, so demote extra indices to cols
     df, extra_level_names = get_2d_indexed_df(df)  # WARNING, changes sort order
@@ -297,8 +302,9 @@ def df_minimize_fcn_on_datasets(df, residuals_fcn, fit_params,
     new_df.fillna(np.nan, inplace=True)
 
     # re-add extra indices:
-    new_df.set_index(extra_level_names,
-                     inplace=True, verify_integrity=True)
+    if extra_level_names:
+        new_df.set_index(extra_level_names,
+                         inplace=True, verify_integrity=True)
     return dataset_results_list, new_df
 
 
