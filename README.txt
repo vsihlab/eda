@@ -98,6 +98,11 @@ Last updated: 8/11/2017
         commands. Get used to typing:
             git fetch    [to check for online updates]
             git merge    [to merge online updates into current branch]
+
+        Periodically you will want to merge in changes others have
+        made to the develop branch into your working branch as well.
+        Unless there is a direct conflict, it will be instant:
+            git merge develop
     -C. Commit file changes to your working branch ASAP, and always
         immediately push those changes to the online repository.
         This, combined with (B), keeps code synced across computers
@@ -249,6 +254,18 @@ Last updated: 8/11/2017
     creating your virtual environment from it, so that others can repeat
     your process by using your environment.yml.
 
+[NOTES ON USING JUPYTER NOTEBOOK]
+[in development]
+-1. First, you will want to make sure nbconfigurations is correctly
+    installed - in your virtual environment, type in the command line:
+        jupyter nbextension enable --py widgetsnbextension
+
+-2. You may want to customize your jupyter's look using jupyter-themes,
+    for example to create light text on a dark background, or to change
+    the default features of plots to make them fit the style of your
+    presentation or journal article. See the official GitHub repository
+    for jupyter-themes for details:
+        https://github.com/dunovank/jupyter-themes
 
 [NOTES ON VERSION CONTROL]
 -A. Recreating old code environments is the best feature that Git

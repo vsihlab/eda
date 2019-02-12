@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from eda.simulations.simple_trkr_rsa_simulation \
+from eda.models.simple_trkr_rsa_simulation \
     import get_pulse_sum_vector, \
            trkr_decaying_cosine
 
@@ -49,8 +49,8 @@ def trkr_decaying_cosine(delay_time, total_bfield,
                          pulse_amplitude,
                          gfactor, spin_lifetime,
                          initial_phase, extra_phase_offset,
-                         slope, offset):
-    zero_delay_offset = 0.0
+                         slope, offset,
+                         zero_delay_offset=0.0):
     pos_def_delay = (delay_time + zero_delay_offset) % LASER_REPRATE
     osc_ang_freq = 2 * np.pi * GFACTORCONSTANT * gfactor * total_bfield
     net_polarization, net_phase = get_pulse_sum_vector(spin_lifetime,

@@ -18,5 +18,5 @@ dependencies:
   - sympy=1.0
   - pip
   - pip:
-      - jupyterthemes
+      - jupyterthemes==0.17.3
 
