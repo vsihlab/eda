@@ -5,3 +5,4 @@ v0.0.2 - updated readme
 v0.0.3 - hotfix to correct for package name change
 v0.1.0 - readme mostly finished, first alpha release
 v0.1.1 - quick readme update
+v1.0.0 - merged in backlog of additions from michael_m_working_branch
