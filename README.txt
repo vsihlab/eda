@@ -74,81 +74,6 @@ Last updated: 8/11/2017
         git push --set-upstream origin [yourname]_working_branch
     You will need the vsihlab GitHub credentials for this step.
 
-    --Further Advice--
-    90% of your git usage will be the same small set of commands,
-    all in your own working branch, and the rest can be done with
-    the guidance of the repository maintainer. As such, it's not
-    necessary for everyone to understand everything about Git.
-    Here are the most important things you should know:
-    -A. Good sources of information:
-        - The version control section later in this readme
-        - [reference/tutorials]
-            -[simple beginner's intro]
-                http://rogerdudler.github.io/git-guide/
-            -[cheatsheet, and site full of tutorials]
-                https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet
-        - ["gitflow" workflow explanations]
-            -[original outline]
-                http://nvie.com/posts/a-successful-git-branching-model/
-            -[alternate explanation]
-                https://www.atlassian.com/git/tutorials/comparing-workflows#gitflow-workflow
-    -B. Fetch online updates and merge them before you start working,
-        particularly if you've switched computers. Git makes it easy
-        to keep code synced across computers, once you learn a few
-        commands. Get used to typing:
-            git fetch    [to check for online updates]
-            git merge    [to merge online updates into current branch]
-
-        Periodically you will want to merge in changes others have
-        made to the develop branch into your working branch as well.
-        Unless there is a direct conflict, it will be instant:
-            git merge develop
-    -C. Commit file changes to your working branch ASAP, and always
-        immediately push those changes to the online repository.
-        This, combined with (B), keeps code synced across computers
-        and easily rolled back to previous commit.
-        Get used to this workflow:
-            git status    [to list all changes]
-            [to add all file changes:] git add .
-            [OR, for each changed file -]
-                [- to examine changes:] git diff [filename]
-                [- to keep changes:] git add [filename]
-                [- to revert changes:] git checkout -- [filename]
-            git commit -m "message describing changes"
-            git push origin
-    -D. Google is your friend for Git help! But here are the most
-        common commands you should probably know:
-            - To swap out all files for those of another branch
-              and switch to working on that branch:
-                git checkout [branch name]
-            - To download updates from online repository without
-              actually implementing them:
-                git fetch
-            - To (if possible) merge in fetched updates into
-              your directory without deleting any of your own changes:
-                git merge
-            - To see a summary of your changes since last commit
-              and to see any downloaded updates relevant to your branch:
-                git status
-            - To confirm or "stage" changes made to a file, or
-              to add a new file to the repository:
-                git add [filename, or . for all files]
-            - To revert all changes to a file since last commit:
-                git checkout [filename]
-            - To commit staged changes to the repository:
-                git commit -m "[description of changes]"
-            - To see changes between file and its last committed version
-              (or, if changes already staged, from last staged version)
-                git diff [filename]
-            - To push local commits to the online repository:
-                git push origin
-    -E. Make use of the ability to try file versions from other people's
-        branches or roll back to previous file versions on your own branch.
-        Git can do anything, and again, Google is your friend.
-    -F. Note: if you manage other git repositories on different git
-        accounts, you may need to set repository-specific credential
-        storage using the Git Credentials Manager.
-        For info, check https://git-scm.com/docs/git-credential
 
 -5. Create a virtual environment for using this development package
     using the environment.yml in the git repository to install
@@ -255,19 +180,91 @@ Last updated: 8/11/2017
     your process by using your environment.yml.
 
 [NOTES ON USING JUPYTER NOTEBOOK]
-[in development]
--1. First, you will want to make sure nbconfigurations is correctly
-    installed - in your virtual environment, type in the command line:
-        jupyter nbextension enable --py widgetsnbextension
-
--2. You may want to customize your jupyter's look using jupyter-themes,
+[incomplete]
+-1. You may want to customize your jupyter's look using jupyter-themes,
     for example to create light text on a dark background, or to change
     the default features of plots to make them fit the style of your
     presentation or journal article. See the official GitHub repository
     for jupyter-themes for details:
         https://github.com/dunovank/jupyter-themes
 
-[NOTES ON VERSION CONTROL]
+[USING GIT]
+90% of your git usage will be the same small set of commands,
+all in your own working branch, and the rest can be done with
+the guidance of the repository maintainer. As such, it's not
+necessary for everyone to understand everything about Git.
+Here are the most important things you should know:
+-A. Good sources of information:
+	- The version control section later in this readme
+	- [reference/tutorials]
+		-[simple beginner's intro]
+			http://rogerdudler.github.io/git-guide/
+		-[cheatsheet, and site full of tutorials]
+			https://www.atlassian.com/git/tutorials/atlassian-git-cheatsheet
+	- ["gitflow" workflow explanations]
+		-[original outline]
+			http://nvie.com/posts/a-successful-git-branching-model/
+		-[alternate explanation]
+			https://www.atlassian.com/git/tutorials/comparing-workflows#gitflow-workflow
+-B. Fetch online updates and merge them before you start working,
+	particularly if you've switched computers. Git makes it easy
+	to keep code synced across computers, once you learn a few
+	commands. Get used to typing:
+		git fetch    [to check for online updates]
+		git merge    [to merge online updates into current branch]
+
+	Periodically you will want to merge in changes others have
+	made to the develop branch into your working branch as well.
+	Unless there is a direct conflict, it will be instant:
+		git merge develop
+-C. Commit file changes to your working branch ASAP, and always
+	immediately push those changes to the online repository.
+	This, combined with (B), keeps code synced across computers
+	and easily rolled back to previous commit.
+	Get used to this workflow:
+		git status    [to list all changes]
+		[to add all file changes:] git add .
+		[OR, for each changed file -]
+			[- to examine changes:] git diff [filename]
+			[- to keep changes:] git add [filename]
+			[- to revert changes:] git checkout -- [filename]
+		git commit -m "message describing changes"
+		git push origin
+-D. Google is your friend for Git help! But here are the most
+	common commands you should probably know:
+		- To swap out all files for those of another branch
+		  and switch to working on that branch:
+			git checkout [branch name]
+		- To download updates from online repository without
+		  actually implementing them:
+			git fetch
+		- To (if possible) merge in fetched updates into
+		  your directory without deleting any of your own changes:
+			git merge
+		- To see a summary of your changes since last commit
+		  and to see any downloaded updates relevant to your branch:
+			git status
+		- To confirm or "stage" changes made to a file, or
+		  to add a new file to the repository:
+			git add [filename, or . for all files]
+		- To revert all changes to a file since last commit:
+			git checkout [filename]
+		- To commit staged changes to the repository:
+			git commit -m "[description of changes]"
+		- To see changes between file and its last committed version
+		  (or, if changes already staged, from last staged version)
+			git diff [filename]
+		- To push local commits to the online repository:
+			git push origin
+-E. Make use of the ability to try file versions from other people's
+	branches or roll back to previous file versions on your own branch.
+	Git can do anything, and again, Google is your friend.
+-F. Note: if you manage other git repositories on different git
+	accounts, you may need to set repository-specific credential
+	storage using the Git Credentials Manager.
+	For info, check https://git-scm.com/docs/git-credential
+
+[GENERAL NOTES ON VERSION CONTROL]
 -A. Recreating old code environments is the best feature that Git
     and conda provide, ensuring old code will always remain usable.
     To take advantage, ALWAYS put a comment at the top of your code
