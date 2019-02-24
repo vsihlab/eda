@@ -4,8 +4,10 @@ channels:
 dependencies:
   - python=3.6
   - anaconda
-  - jupyter_contrib_nbextensions
+  - pandas
   - lmfit
+  - jupyter_contrib_nbextensions
+  - ipywidgets
   - pip
   - pip:
       - jupyterthemes
