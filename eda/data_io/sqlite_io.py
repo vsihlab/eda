@@ -4,50 +4,6 @@ import sqlite3 as sql
 
 import base64, hashlib, os
 
-# helper function for preprocessing data for sql
-def get_updated_metadata_dict(file_metadata_dict, experiment_alias="None"):
-    """Takes a metadata dictionary like those from
-       eda.csv_to_dataframe, and modifies it to include
-       information from the filepath
-    """
-    relative_filepath = file_metadata_dict['Filepath']
-    absolute_filepath = os.path.abspath(relative_filepath)
-    this_script_dirpath = os.path.abspath(".")
-    filename = relative_filepath.split('\\')[-2]
-    file_hash_key = filename + file_metadata_dict['Scan Start']
-    exp_hash_key = this_script_dirpath  # + experiment_alias
-    file_id = base64.b64encode(hashlib.md5(file_hash_key.encode('utf-8')).digest())
-    exp_id = base64.b64encode(hashlib.md5(exp_hash_key.encode('utf-8')).digest())
-    new_dict = dict()
-    new_dict['file_id'] = file_id
-    new_dict['experiment_id'] = exp_id
-    new_dict['experiment_alias'] = experiment_alias
-    new_dict['run_id'] = file_metadata_dict['Run ID']
-    if 'SecondScanIndex' in file_metadata_dict:
-        new_dict['index_2d'] = file_metadata_dict['SecondScanIndex']
-    else:
-        new_dict['index_2d'] = -1
-    new_dict['filepath'] = absolute_filepath
-    if relative_filepath != absolute_filepath:
-        new_dict['relative_filepath'] = relative_filepath
-    new_dict['last_modified'] = file_metadata_dict['File Last Modified']
-    for key, value in file_metadata_dict.items():
-        if key in ['Filepath', 'File Last Modified',
-                   'Run ID', 'SecondScanIndex']:
-            continue
-        new_dict[key] = value
-    return new_dict
-
-# helper function for preprocessing metadata for sql
-def dict_to_two_column_df(input_dict):
-    """Convert a dictionary into a pandas dataframe
-       with columns 'key' and 'value'."""
-    file_metadata_df = pd.DataFrame.from_dict(input_dict, orient='index',
-                                              dtype='str', columns=['value'])
-    file_metadata_df.reset_index(inplace=True)
-    file_metadata_df.rename(index=str, columns={'index': 'key'}, inplace=True)
-    return file_metadata_df
-
 def create_missing_tables(conn):
     """Ensures database contains the following tables
        and creates them if they do not yet exist:
@@ -247,3 +203,47 @@ def add_file_df_to_raw_data_if_missing(file_df, conn, overwrite_flag='warn'):
                    file_num_rows, num_rows_found))
             print("File not written to database.")
     return False
+
+# helper function for preprocessing data for sql
+def get_updated_metadata_dict(file_metadata_dict, experiment_alias="None"):
+    """Takes a metadata dictionary like those from
+       eda.csv_to_dataframe, and modifies it to include
+       information from the filepath
+    """
+    relative_filepath = file_metadata_dict['Filepath']
+    absolute_filepath = os.path.abspath(relative_filepath)
+    this_script_dirpath = os.path.abspath(".")
+    filename = relative_filepath.split('\\')[-2]
+    file_hash_key = filename + file_metadata_dict['Scan Start']
+    exp_hash_key = this_script_dirpath  # + experiment_alias
+    file_id = base64.b64encode(hashlib.md5(file_hash_key.encode('utf-8')).digest())
+    exp_id = base64.b64encode(hashlib.md5(exp_hash_key.encode('utf-8')).digest())
+    new_dict = dict()
+    new_dict['file_id'] = file_id
+    new_dict['experiment_id'] = exp_id
+    new_dict['experiment_alias'] = experiment_alias
+    new_dict['run_id'] = file_metadata_dict['Run ID']
+    if 'SecondScanIndex' in file_metadata_dict:
+        new_dict['index_2d'] = file_metadata_dict['SecondScanIndex']
+    else:
+        new_dict['index_2d'] = -1
+    new_dict['filepath'] = absolute_filepath
+    if relative_filepath != absolute_filepath:
+        new_dict['relative_filepath'] = relative_filepath
+    new_dict['last_modified'] = file_metadata_dict['File Last Modified']
+    for key, value in file_metadata_dict.items():
+        if key in ['Filepath', 'File Last Modified',
+                   'Run ID', 'SecondScanIndex']:
+            continue
+        new_dict[key] = value
+    return new_dict
+
+# helper function for preprocessing metadata for sql
+def dict_to_two_column_df(input_dict):
+    """Convert a dictionary into a pandas dataframe
+       with columns 'key' and 'value'."""
+    file_metadata_df = pd.DataFrame.from_dict(input_dict, orient='index',
+                                              dtype='str', columns=['value'])
+    file_metadata_df.reset_index(inplace=True)
+    file_metadata_df.rename(index=str, columns={'index': 'key'}, inplace=True)
+    return file_metadata_df
