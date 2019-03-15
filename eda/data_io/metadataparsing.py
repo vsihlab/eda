@@ -128,7 +128,7 @@ def analyze_string_for_dict_pairs(infostr, scaninfo=None):
     for row in strrows:
         key, value = "", ""
         try:
-            key, value = row.split(":")
+            key, value = row.split(":", 1)
         except ValueError:
             pass
         if key:
