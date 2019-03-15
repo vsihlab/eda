@@ -4,93 +4,6 @@ import sqlite3 as sql
 
 import base64, hashlib, os
 
-def create_missing_tables(conn):
-    """Ensures database contains the following tables
-       and creates them if they do not yet exist:
-       raw_data, metadata
-    """
-    table1command = """CREATE TABLE IF NOT EXISTS raw_data
-                       (file_id TEXT, file_row INTEGER, scancoord REAL,
-                        lockin2x REAL, lockin1x REAL, lockin2r REAL,
-                        lockin1r REAL, laserpower REAL, cwetalon REAL,
-                        lockin3x REAL, lockin3r REAL, lockin4x REAL,
-                        lockin4r REAL, lockin5x REAL, lockin5r REAL,
-                        lasercomponent1 REAL, lasercomponent2 REAL,
-                        temperature REAL, labtime REAL)
-                    """
-    table2command = """CREATE TABLE IF NOT EXISTS metadata
-                       (file_id TEXT, key TEXT, value TEXT)
-                    """
-    cur = conn.cursor()
-    cur.execute(table1command)
-    cur.execute(table2command)
-    conn.commit()
-
-def num_rows_for_file_id_in_raw_data(file_id, conn):
-    """Checks if the 'raw_data' table contains the provided
-       file_id with the same number of rows. Does not check
-       content.
-       
-       Returns the number of rows in raw_data with the specified
-       file_id. If the file_id is not found, the result is zero.
-       
-       Warning:
-       Does not check if table is missing. Check before use.
-    """
-    query = """SELECT COUNT(*) AS num_rows
-               FROM raw_data
-               GROUP BY file_id
-               HAVING file_id = ?
-            """
-    qparams = (file_id,)  # must be tuple for DB-API
-    qdf = pd.read_sql_query(query, conn, params=qparams)
-    num_rows_found = 0
-    if len(qdf) > 0:
-        num_rows_found = qdf.num_rows.iloc[0]
-    return num_rows_found
-
-def metadata_df_from_file_id_in_metadata(file_id, conn):
-    """Checks if the 'metadata' table contains the provided
-       file_id, and returns the associated metadata dataframe.
-       
-       If the file_id is not found, the returned DataFrame
-       will be empty.
-       
-       Warning:
-       Does not check if table is missing. Check before use.
-    """
-    query = """SELECT *
-               FROM metadata
-               GROUP BY file_id
-               HAVING file_id = ?
-            """
-    qparams = (file_id,)  # must be tuple for DB-API
-    qdf = pd.read_sql_query(query, conn, params=qparams)
-    return qdf
-
-def delete_file_id_from_raw_data(file_id, conn):
-    """Removes all rows with given file_id from 'raw_data'."""
-    cur = conn.cursor()
-    cur.execute("""DELETE FROM raw_data
-                   WHERE file_id=?""", (file_id,))
-    conn.commit()
-
-def delete_file_id_from_metadata(file_id, conn):
-    """Removes all rows with given file_id from 'metadata'."""
-    cur = conn.cursor()
-    cur.execute("""DELETE FROM metadata
-                   WHERE file_id=?""", (file_id,))
-    conn.commit()
-
-def replace_value_in_metadata(file_id, key, value, conn):
-    """Removes all rows with given file_id from 'metadata'."""
-    cur = conn.cursor()
-    cur.execute("""UPDATE metadata
-                   SET value = ?
-                   WHERE key = ? AND
-                         file_id = ?""", (value, key, file_id))
-    conn.commit()
-
 def update_metadata_table_from_metadata_df(metadata_df, conn,
                                            overwrite_flag='warn'):
     """Adds contents of metadata_df to the table 'metadata'
@@ -237,6 +150,93 @@ def get_updated_metadata_dict(file_metadata_dict, experiment_alias="None"):
             continue
         new_dict[key] = value
     return new_dict
+
+def create_missing_tables(conn):
+    """Ensures database contains the following tables
+       and creates them if they do not yet exist:
+       raw_data, metadata
+    """
+    table1command = """CREATE TABLE IF NOT EXISTS raw_data
+                       (file_id TEXT, file_row INTEGER, scancoord REAL,
+                        lockin2x REAL, lockin1x REAL, lockin2r REAL,
+                        lockin1r REAL, laserpower REAL, cwetalon REAL,
+                        lockin3x REAL, lockin3r REAL, lockin4x REAL,
+                        lockin4r REAL, lockin5x REAL, lockin5r REAL,
+                        lasercomponent1 REAL, lasercomponent2 REAL,
+                        temperature REAL, labtime REAL)
+                    """
+    table2command = """CREATE TABLE IF NOT EXISTS metadata
+                       (file_id TEXT, key TEXT, value TEXT)
+                    """
+    cur = conn.cursor()
+    cur.execute(table1command)
+    cur.execute(table2command)
+    conn.commit()
+
+def num_rows_for_file_id_in_raw_data(file_id, conn):
+    """Checks if the 'raw_data' table contains the provided
+       file_id with the same number of rows. Does not check
+       content.
+       
+       Returns the number of rows in raw_data with the specified
+       file_id. If the file_id is not found, the result is zero.
+       
+       Warning:
+       Does not check if table is missing. Check before use.
+    """
+    query = """SELECT COUNT(*) AS num_rows
+               FROM raw_data
+               GROUP BY file_id
+               HAVING file_id = ?
+            """
+    qparams = (file_id,)  # must be tuple for DB-API
+    qdf = pd.read_sql_query(query, conn, params=qparams)
+    num_rows_found = 0
+    if len(qdf) > 0:
+        num_rows_found = qdf.num_rows.iloc[0]
+    return num_rows_found
+
+def metadata_df_from_file_id_in_metadata(file_id, conn):
+    """Checks if the 'metadata' table contains the provided
+       file_id, and returns the associated metadata dataframe.
+       
+       If the file_id is not found, the returned DataFrame
+       will be empty.
+       
+       Warning:
+       Does not check if table is missing. Check before use.
+    """
+    query = """SELECT *
+               FROM metadata
+               GROUP BY file_id
+               HAVING file_id = ?
+            """
+    qparams = (file_id,)  # must be tuple for DB-API
+    qdf = pd.read_sql_query(query, conn, params=qparams)
+    return qdf
+
+def delete_file_id_from_raw_data(file_id, conn):
+    """Removes all rows with given file_id from 'raw_data'."""
+    cur = conn.cursor()
+    cur.execute("""DELETE FROM raw_data
+                   WHERE file_id=?""", (file_id,))
+    conn.commit()
+
+def delete_file_id_from_metadata(file_id, conn):
+    """Removes all rows with given file_id from 'metadata'."""
+    cur = conn.cursor()
+    cur.execute("""DELETE FROM metadata
+                   WHERE file_id=?""", (file_id,))
+    conn.commit()
+
+def replace_value_in_metadata(file_id, key, value, conn):
+    """Removes all rows with given file_id from 'metadata'."""
+    cur = conn.cursor()
+    cur.execute("""UPDATE metadata
+                   SET value = ?
+                   WHERE key = ? AND
+                         file_id = ?""", (value, key, file_id))
+    conn.commit()
 
 # helper function for preprocessing metadata for sql
 def dict_to_two_column_df(input_dict):
